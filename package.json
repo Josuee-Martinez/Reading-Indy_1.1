@@ -1,0 +1,14 @@
+{
+  "name": "reading-indy_1.1",
+  "version": "1.1.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "author": "josue",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
