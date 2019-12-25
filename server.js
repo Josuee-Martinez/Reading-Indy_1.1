@@ -1,21 +1,21 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
-const connectDB = require("./db");
+const errorHandler = require("./middleware/error");
+const connectDBase = require("./db");
 
-connectDB();
+connectDBase();
 
 const reviews = require("./routes/reviews");
+const auth = require("./routes/auth");
 
 app.use(express.json());
 
 app.use("/api/reviews", reviews);
+app.use("/api/users", auth);
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 
-const server = app.listen(PORT, console.log(`Server running on port ${PORT}`));
-
-process.on("unhandledRejection", (error, promise) => {
-  console.log(`Error: ${error.message}`);
-  server.close(() => process.exit(1));
-});
+app.listen(PORT, console.log(`Server running on port ${PORT}`));
