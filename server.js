@@ -1,20 +1,20 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
-const errorHandler = require("./middleware/error");
+// const cookieParser = require("cookie-parser");
 const connectDBase = require("./db");
 
 connectDBase();
 
-const reviews = require("./routes/reviews");
+// const reviews = require("./routes/reviews");
 const auth = require("./routes/auth");
 
 app.use(express.json());
 
-app.use("/api/reviews", reviews);
-app.use("/api/users", auth);
+// app.use(cookieParser());
 
-app.use(errorHandler);
+// app.use("/api/reviews", reviews);
+app.use("/api/users", auth);
 
 const PORT = process.env.PORT || 3001;
 

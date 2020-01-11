@@ -1,41 +1,58 @@
 const User = require("../models/User");
-const ErrorResponse = require("../utils/errorResponse");
-const asyncHandler = require("../middleware/async");
 
-exports.signup = asyncHandler(async (req, res, next) => {
+exports.signup = async (req, res, next) => {
   const { name, email, password } = req.body;
 
-  const user = await User.create({
-    name,
-    email,
-    password
-  });
+  try {
+    let user = await User.findOne({ email });
 
-  const token = user.getJwtToken();
+    if (user) {
+      return res.status(400).json({
+        errors: [{ msg: "A user is already associated with this email" }]
+      });
+    }
 
-  res.status(200).json({ success: true, token });
-});
+    user = await User.create({
+      name,
+      email,
+      password
+    });
 
-exports.signin = asyncHandler(async (req, res, next) => {
+    const token = user.getJwtToken();
+
+    res.status(200).json({ success: true, token });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server error");
+  }
+};
+
+exports.signin = async (req, res, next) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    return next(new ErrorResponse("please enter an email and password", 400));
+  try {
+    let user = await User.findOne({ email }).select("+password");
+
+    if (!user) {
+      return res.status(401).json({
+        errors: [{ msg: "Invalid Credentials" }]
+      });
+    }
+
+    // bcrypt verify password
+    const match = await user.matchPassword(password);
+
+    if (!match) {
+      return res.status(401).json({
+        errors: [{ msg: "Invalid Credentials" }]
+      });
+    }
+
+    const token = user.getJwtToken();
+
+    res.status(200).json({ success: true, token });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Server error");
   }
-
-  const user = await User.findOne({ email }).select("+password");
-
-  if (!user) {
-    return next(new ErrorResponse("Invalid credentials", 401));
-  }
-
-  const match = await user.verifyPassword(password);
-
-  if (!match) {
-    return next(new ErrorResponse("invalid credentials", 401));
-  }
-
-  const token = user.getJwtToken();
-
-  res.status(200).json({ success: true, token });
-});
+};
